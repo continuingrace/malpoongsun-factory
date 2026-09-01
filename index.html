@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>malpoongsun factory v2.3 · 말풍선 제조기</title>
+<title>malpoongsun factory v2.4 · 말풍선 제조기</title>
 <style>
 :root{
   --bg:#f3f3f5; --panel:#fff; --border:#d9d9de; --text:#111; --muted:#686870;
@@ -56,9 +56,9 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
   <div class="header">
     <div>
       <h1>말풍선 제조기</h1>
-      <p>말풍선 제조기 · v2.3 — 전 재질 요철·가시형 돌출 방지</p>
+      <p>말풍선 제조기 · v2.4 — 꼬리 접점 곡선 연속성 보정</p>
     </div>
-    <span class="badge">local v2.3</span>
+    <span class="badge">local v2.4</span>
   </div>
 
   <div class="layout">
@@ -401,27 +401,32 @@ function collectTopArc(points, leftIdx, rightIdx){
   return out;
 }
 function pointTailSegment(fromPt, toPt, tipX, tipY, tw, th, tipRadius, tanRight, tanLeft){
-  // 꼬리 본체는 두 직선에 가깝게 유지하고, 지정한 반경만 끝점에 적용합니다.
+  // 접점에서는 본체 선의 접선으로 출발·도착하고, 끝 반경은 접점과 분리해 적용합니다.
   const right=fromPt, left=toPt;
   const cap=Math.max(0,Math.min(18,+tipRadius||0));
   const rt=tanRight||[1,0], lt=tanLeft||[1,0];
   const rlen=Math.hypot(rt[0],rt[1])||1, llen=Math.hypot(lt[0],lt[1])||1;
   const rn=[rt[0]/rlen,rt[1]/rlen], ln=[lt[0]/llen,lt[1]/llen];
-  const rightControl=[tipX+tw*0.16,tipY-th*0.14];
-  const leftControl=[tipX-tw*0.16,tipY-th*0.14];
+  const rightHandle=Math.max(7,Math.min(tw*0.25,Math.hypot(tipX-right[0],tipY-right[1])*0.24));
+  const leftHandle=Math.max(7,Math.min(tw*0.25,Math.hypot(tipX-left[0],tipY-left[1])*0.24));
+  const rightAnchor=[right[0]+rn[0]*rightHandle,right[1]+rn[1]*rightHandle];
+  const leftAnchor=[left[0]-ln[0]*leftHandle,left[1]-ln[1]*leftHandle];
+  const rightTipControl=[tipX-(tipX-right[0])*0.12,tipY-(tipY-right[1])*0.12];
+  const leftTipControl=[tipX+(left[0]-tipX)*0.12,tipY+(left[1]-tipY)*0.12];
   if(cap < 0.01){
     return join(
-      bezierPts(right,[right[0]+rn[0]*tw*0.18,right[1]+rn[1]*tw*0.18],rightControl,[tipX,tipY],14),
-      bezierPts([tipX,tipY],leftControl,[left[0]-ln[0]*tw*0.18,left[1]-ln[1]*tw*0.18],left,14)
+      bezierPts(right,rightAnchor,rightTipControl,[tipX,tipY],14),
+      bezierPts([tipX,tipY],leftTipControl,leftAnchor,left,14)
     );
   }
-  const rightCap=[tipX+cap*0.55,tipY-cap*0.62];
-  const leftCap=[tipX-cap*0.55,tipY-cap*0.62];
+  const toRight=[right[0]-tipX,right[1]-tipY], toLeft=[left[0]-tipX,left[1]-tipY];
+  const rightDistance=Math.hypot(toRight[0],toRight[1])||1, leftDistance=Math.hypot(toLeft[0],toLeft[1])||1;
+  const rightCap=[tipX+toRight[0]/rightDistance*cap,tipY+toRight[1]/rightDistance*cap];
+  const leftCap=[tipX+toLeft[0]/leftDistance*cap,tipY+toLeft[1]/leftDistance*cap];
   let p=[];
-  p=join(p,bezierPts(right,[right[0]+rn[0]*tw*0.18,right[1]+rn[1]*tw*0.18],rightControl,rightCap,14));
-  p=join(p,bezierPts(rightCap,[tipX+cap*0.78,tipY-cap*0.10],[tipX+cap*0.70,tipY+cap*0.26],[tipX,tipY],8));
-  p=join(p,bezierPts([tipX,tipY],[tipX-cap*0.70,tipY+cap*0.26],[tipX-cap*0.78,tipY-cap*0.10],leftCap,8));
-  p=join(p,bezierPts(leftCap,leftControl,[left[0]-ln[0]*tw*0.18,left[1]-ln[1]*tw*0.18],left,14));
+  p=join(p,bezierPts(right,rightAnchor,[rightCap[0]-(rightCap[0]-right[0])*0.12,rightCap[1]-(rightCap[1]-right[1])*0.12],rightCap,14));
+  p=join(p,bezierPts(rightCap,[tipX+cap*0.55,tipY+cap*0.86],[tipX-cap*0.55,tipY+cap*0.86],leftCap,10));
+  p=join(p,bezierPts(leftCap,[leftCap[0]+(left[0]-leftCap[0])*0.12,leftCap[1]+(left[1]-leftCap[1])*0.12],leftAnchor,left,14));
   return p;
 }
 function ellipseBalloonPts(cx,cy,rx,ry,tp,tw,th,lean,tipRadius,kind){
@@ -822,7 +827,7 @@ $('saveSvg').addEventListener('click', ()=>{
   const blob = new Blob([svgText()], {type:'image/svg+xml'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'malpoongsun-factory-v2.3.svg';
+  a.download = 'malpoongsun-factory-v2.4.svg';
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
   $('status').textContent = 'SVG 저장 완료 — Figma에 드래그하면 벡터로 사용할 수 있습니다.';
@@ -842,7 +847,7 @@ $('savePng').addEventListener('click', ()=>{
     c.toBlob(png=>{
       const a = document.createElement('a');
       a.href = URL.createObjectURL(png);
-      a.download = 'malpoongsun-factory-v2.3.png';
+      a.download = 'malpoongsun-factory-v2.4.png';
       a.click();
       setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
       $('status').textContent = 'PNG 저장 완료';
