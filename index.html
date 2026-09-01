@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>malpoongsun factory v1.8 · 말풍선 제조기</title>
+<title>malpoongsun factory v1.9 · 말풍선 제조기</title>
 <style>
 :root{
   --bg:#f3f3f5; --panel:#fff; --border:#d9d9de; --text:#111; --muted:#686870;
@@ -56,9 +56,9 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
   <div class="header">
     <div>
       <h1>말풍선 제조기</h1>
-      <p>말풍선 제조기 · v1.8 — 압력 변화 표현 강화</p>
+      <p>말풍선 제조기 · v1.9 — 재질별 선 질감·꼬리 끝 개선</p>
     </div>
-    <span class="badge">local v1.8</span>
+    <span class="badge">local v1.9</span>
   </div>
 
   <div class="layout">
@@ -128,13 +128,13 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
 
       <div class="section">
         <h2>HAND-DRAWN</h2>
-        <div class="field"><label>라인 흔들림</label><div class="pair"><input id="wobble" type="range" min="0" max="3" step="0.05" value="0.65"><input id="wobbleN" type="number" min="0" max="3" step="0.05" value="0.65"></div></div>
-        <div class="field"><label>스트로크 다이나믹 — 선 외곽의 미세한 톱니감 / 생동감</label><div class="pair"><input id="dynamic" type="range" min="0" max="100" value="48"><input id="dynamicN" type="number" min="0" max="100" value="48"></div></div>
-        <div class="field"><label>자글 빈도 — 한 길이 안에서 더 촘촘하게 미세 굴곡이 반복됨</label><div class="pair"><input id="microFreq" type="range" min="0" max="100" value="72"><input id="microFreqN" type="number" min="0" max="100" value="72"></div></div>
+        <div class="field"><label>라인 흔들림 — 6까지 선의 미세한 흔들림을 계속 확장</label><div class="pair"><input id="wobble" type="range" min="0" max="6" step="0.05" value="0.65"><input id="wobbleN" type="number" min="0" max="6" step="0.05" value="0.65"></div></div>
+        <div class="field"><label>스트로크 다이나믹 — 200까지 선 외곽의 톱니감 / 생동감</label><div class="pair"><input id="dynamic" type="range" min="0" max="200" value="48"><input id="dynamicN" type="number" min="0" max="200" value="48"></div></div>
+        <div class="field"><label>자글 빈도 — 200까지 미세 굴곡 반복을 더 촘촘하게</label><div class="pair"><input id="microFreq" type="range" min="0" max="200" value="72"><input id="microFreqN" type="number" min="0" max="200" value="72"></div></div>
         <div class="field"><label>표면 질감 밀도 — 200이면 100보다 더 촘촘한 자글자글 흔적</label><div class="pair"><input id="texture" type="range" min="0" max="200" value="34"><input id="textureN" type="number" min="0" max="200" value="34"></div></div>
-        <div class="field"><label>그레인 크기</label><div class="pair"><input id="grain" type="range" min="1" max="100" value="36"><input id="grainN" type="number" min="1" max="100" value="36"></div></div>
-        <div class="field"><label>압력 변화 — 세게 누를수록 본선이 굵고 보조선 대비가 커짐</label><div class="pair"><input id="pressure" type="range" min="0" max="100" value="20"><input id="pressureN" type="number" min="0" max="100" value="20"></div></div>
-        <div class="field"><label>잉크 / 흑연 밀도</label><div class="pair"><input id="density" type="range" min="20" max="100" value="92"><input id="densityN" type="number" min="20" max="100" value="92"></div></div>
+        <div class="field"><label>그레인 크기 — 180까지 표면 입자 크기 확장</label><div class="pair"><input id="grain" type="range" min="1" max="180" value="36"><input id="grainN" type="number" min="1" max="180" value="36"></div></div>
+        <div class="field"><label>압력 변화 — 200까지 세게 누를수록 본선이 굵고 보조선 대비가 커짐</label><div class="pair"><input id="pressure" type="range" min="0" max="200" value="20"><input id="pressureN" type="number" min="0" max="200" value="20"></div></div>
+        <div class="field"><label>잉크 / 흑연 밀도 — 200까지 겹침 농도와 흔적 밀도 확장</label><div class="pair"><input id="density" type="range" min="20" max="200" value="92"><input id="densityN" type="number" min="20" max="200" value="92"></div></div>
       </div>
 
       <div class="section">
@@ -152,7 +152,7 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
         <h2>BUBBLE TAIL</h2>
         <div class="grid3">
           <button class="btn active" data-tail-type="point">뾰족 꼬리</button>
-          <button class="btn" data-tail-type="curve">곡선 꼬리</button>
+          <button class="btn" data-tail-type="curve">살짝 둥근 끝</button>
           <button class="btn" data-tail-type="thought">생각 꼬리</button>
         </div>
         <div class="grid3" style="margin-top:8px">
@@ -197,9 +197,9 @@ const materialNames = {felt:'Felt-tip', marker:'Marker', pen:'Pen', pencil:'Penc
 const shapeNames = {bubble:'말풍선', rect:'둥근 사각형', ellipse:'타원 말풍선', line:'라인'};
 
 const materialDefaults = {
-  felt:     {texture:38, grain:38, pressure:20, density:94, wobble:0.65, strokeWidth:4.0, dynamic:52, microFreq:78},
-  marker:   {texture:28, grain:26, pressure:28, density:98, wobble:0.55, strokeWidth:5.0, dynamic:42, microFreq:60},
-  pen:      {texture:10, grain:12, pressure:14, density:100,wobble:0.28, strokeWidth:2.4, dynamic:18, microFreq:34},
+  felt:     {texture:62, grain:44, pressure:42, density:88, wobble:0.85, strokeWidth:4.4, dynamic:65, microFreq:78},
+  marker:   {texture:78, grain:55, pressure:58, density:92, wobble:0.68, strokeWidth:5.8, dynamic:72, microFreq:88},
+  pen:      {texture:20, grain:16, pressure:28, density:100,wobble:0.32, strokeWidth:2.2, dynamic:38, microFreq:50},
   pencil:   {texture:70, grain:58, pressure:34, density:76, wobble:0.44, strokeWidth:2.3, dynamic:58, microFreq:86},
   charcoal: {texture:94, grain:82, pressure:62, density:88, wobble:0.48, strokeWidth:6.2, dynamic:42, microFreq:84}
 };
@@ -408,6 +408,22 @@ function roundedTailSegment(fromPt, toPt, tipX, tipY, tw, th, tanRight, tanLeft)
   p=join(p,bezierPts(leftCap,[tipX-tw*0.24,tipY-th*0.10],[left[0]-ln[0]*tw*0.22,left[1]-ln[1]*tw*0.22],left,16));
   return p;
 }
+function softPointTailSegment(fromPt, toPt, tipX, tipY, tw, th, tanRight, tanLeft){
+  // 뾰족 꼬리의 형태는 유지하고, 끝 6~8px만 둥근 캡처럼 처리합니다.
+  const right=fromPt, left=toPt;
+  const cap=Math.max(3.5,Math.min(8,tw*0.09));
+  const rt=tanRight||[1,0], lt=tanLeft||[1,0];
+  const rlen=Math.hypot(rt[0],rt[1])||1, llen=Math.hypot(lt[0],lt[1])||1;
+  const rn=[rt[0]/rlen,rt[1]/rlen], ln=[lt[0]/llen,lt[1]/llen];
+  const rightCap=[tipX+cap*0.55,tipY-cap*0.62];
+  const leftCap=[tipX-cap*0.55,tipY-cap*0.62];
+  let p=[];
+  p=join(p,bezierPts(right,[right[0]+rn[0]*tw*0.20,right[1]+rn[1]*tw*0.20],[tipX+tw*0.13,tipY-th*0.12],rightCap,14));
+  p=join(p,bezierPts(rightCap,[tipX+cap*0.78,tipY-cap*0.10],[tipX+cap*0.70,tipY+cap*0.26],[tipX,tipY],8));
+  p=join(p,bezierPts([tipX,tipY],[tipX-cap*0.70,tipY+cap*0.26],[tipX-cap*0.78,tipY-cap*0.10],leftCap,8));
+  p=join(p,bezierPts(leftCap,[tipX-tw*0.13,tipY-th*0.12],[left[0]-ln[0]*tw*0.20,left[1]-ln[1]*tw*0.20],left,14));
+  return p;
+}
 function ellipseBalloonPts(cx,cy,rx,ry,tp,tw,th,lean,kind){
   const full=ellipsePts(cx,cy,rx,ry);
   const c=cx+(tp-0.5)*rx*1.20;
@@ -434,7 +450,7 @@ function ellipseBalloonPts(cx,cy,rx,ry,tp,tw,th,lean,kind){
     p=join(p,bezierPts(rightPt,[rightX+rn[0]*tw*0.18,rightY+rn[1]*tw*0.18],[tipX+tw*0.16,tipY-th*0.14],[tipX,tipY],14));
     p=join(p,bezierPts([tipX,tipY],[tipX-tw*0.16,tipY-th*0.14],[leftX-ln[0]*tw*0.18,leftY-ln[1]*tw*0.18],leftPt,14));
   }else{
-    p=join(p,roundedTailSegment(rightPt,leftPt,tipX,tipY,tw,th,tanRight,tanLeft));
+    p=join(p,kind==='curve' ? softPointTailSegment(rightPt,leftPt,tipX,tipY,tw,th,tanRight,tanLeft) : roundedTailSegment(rightPt,leftPt,tipX,tipY,tw,th,tanRight,tanLeft));
   }
   p=join(p,topArc);
   return {outline:p,meta:{anchorX:c,anchorY,tipX,tipY}};
@@ -459,7 +475,7 @@ function bubbleOutlinePts(x,y,w,h,r,tp,tw,th,lean,kind){
     p=join(p,linePts(right,bottom,tipX,tipY,11));
     p=join(p,linePts(tipX,tipY,left,bottom,11));
   } else if(kind==='curve'){
-    p=join(p,roundedTailSegment([right,bottom], [left,bottom], tipX, tipY, tw, th));
+    p=join(p,softPointTailSegment([right,bottom], [left,bottom], tipX, tipY, tw, th));
   } else {
     p=join(p,linePts(right,bottom,left,bottom,12));
   }
@@ -508,19 +524,19 @@ function deformPoints(points, closed, seed, wobbleAmp, dynamicAmt, microFreq){
   const mf=microFreq/100;
   const lowFreq=8+mf*10,midFreq=26+mf*42,hiFreq=58+mf*92,microHi=110+mf*150;
   const charcoalSoft=material==='charcoal';
-  const wobScale=charcoalSoft?0.68:1.0, dynScale=charcoalSoft?0.48:1.0;
+  const wobScale=charcoalSoft?0.82:1.0, dynScale=charcoalSoft?0.66:1.0;
   for(let i=0;i<points.length;i++){
     const prev=points[Math.max(0,i-1)],next=points[Math.min(points.length-1,i+1)],cur=points[i];
     let dx=next[0]-prev[0],dy=next[1]-prev[1],len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;
     if(!closed&&(i===0||i===points.length-1)){nx=0;ny=0;}
     const t=i/Math.max(1,points.length-1);
-    const low=Math.sin(t*lowFreq+phase1)*dynamicAmt*0.085*dynScale;
-    const mid=Math.sin(t*midFreq+phase2)*dynamicAmt*0.060*dynScale;
-    const hi=Math.sin(t*hiFreq+phase3)*dynamicAmt*0.032*dynScale;
-    const micro=Math.sin(t*microHi+phase4)*dynamicAmt*0.018*dynScale;
+    const low=Math.sin(t*lowFreq+phase1)*dynamicAmt*0.120*dynScale;
+    const mid=Math.sin(t*midFreq+phase2)*dynamicAmt*0.090*dynScale;
+    const hi=Math.sin(t*hiFreq+phase3)*dynamicAmt*0.050*dynScale;
+    const micro=Math.sin(t*microHi+phase4)*dynamicAmt*0.026*dynScale;
     const rnd=jitter(r,wobbleAmp*wobScale*(0.28+mf*0.16));
     let a=rnd+low+mid+hi+micro;
-    if(charcoalSoft){const cap=Math.max(0.45,wobbleAmp*0.82+dynamicAmt*0.16);a=Math.max(-cap,Math.min(cap,a));}
+    if(charcoalSoft){const cap=Math.max(0.55,wobbleAmp*0.95+dynamicAmt*0.18);a=Math.max(-cap,Math.min(cap,a));}
     out.push([cur[0]+nx*a,cur[1]+ny*a]);
   }
   return out;
@@ -573,7 +589,7 @@ function textureMarks(samples, v){
   const cfg=materialCfg(),r=rng(v.seed+777);
   const textureLevel=Math.max(0,v.texture/100);
   const tex=Math.min(1,textureLevel);
-  const dens=Math.max(0.2,v.density/100);
+  const dens=Math.min(1.6,Math.max(0.2,v.density/100));
   const densityCountBoost=0.20+Math.pow(dens,1.7)*3.80;
   // 100까지는 기존 분포를 유지하고, 100~200 구간은 표면 흔적 수를 추가로 늘립니다.
   const textureCountBoost=0.10+Math.pow(textureLevel,1.15)*5.90;
@@ -615,6 +631,31 @@ function textureMarks(samples, v){
         const fx1=fx-Math.cos(rad)*fiberLen/2, fy1=fy-Math.sin(rad)*fiberLen/2, fx2=fx+Math.cos(rad)*fiberLen/2, fy2=fy+Math.sin(rad)*fiberLen/2;
         arr.push(`<line x1="${fx1.toFixed(2)}" y1="${fy1.toFixed(2)}" x2="${fx2.toFixed(2)}" y2="${fy2.toFixed(2)}" stroke="${v.stroke}" stroke-width="${fiberWid.toFixed(2)}" stroke-linecap="butt" stroke-opacity="${(opacityBase*(0.34+pressure*0.42)).toFixed(3)}"/>`);
       }
+    }else if(material==='felt'){
+      // 펠트팁은 마커보다 둥글고 부드럽지만, 한 번에 균일하지 않은
+      // 짧은 섬유 자국이 남도록 표현합니다.
+      const tangentShift=(-0.75+r()*1.50)*baseSize;
+      const normalShift=jitter(r,baseSize*(0.08+dens*0.08));
+      const cx=s.x+s.dx*tangentShift+s.nx*normalShift, cy=s.y+s.dy*tangentShift+s.ny*normalShift;
+      const len=baseSize*(0.95+r()*1.75), wid=Math.max(0.45,baseSize*(0.28+r()*0.34));
+      const rot=ang*180/Math.PI+jitter(r,3.5), rad=rot*Math.PI/180;
+      const x1=cx-Math.cos(rad)*len/2, y1=cy-Math.sin(rad)*len/2;
+      const x2=cx+Math.cos(rad)*len/2, y2=cy+Math.sin(rad)*len/2;
+      arr.push(`<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${v.stroke}" stroke-width="${wid.toFixed(2)}" stroke-linecap="round" stroke-opacity="${(opacityBase*0.92).toFixed(3)}"/>`);
+      if(r()<0.68){
+        const fiberLen=len*(0.48+r()*0.48), fiberWid=Math.max(0.20,wid*(0.16+r()*0.18));
+        const fx=cx+s.dx*jitter(r,baseSize*0.45), fy=cy+s.dy*jitter(r,baseSize*0.45);
+        arr.push(`<line x1="${(fx-Math.cos(rad)*fiberLen/2).toFixed(2)}" y1="${(fy-Math.sin(rad)*fiberLen/2).toFixed(2)}" x2="${(fx+Math.cos(rad)*fiberLen/2).toFixed(2)}" y2="${(fy+Math.sin(rad)*fiberLen/2).toFixed(2)}" stroke="${v.stroke}" stroke-width="${fiberWid.toFixed(2)}" stroke-linecap="round" stroke-opacity="${(opacityBase*0.48).toFixed(3)}"/>`);
+      }
+    }else if(material==='pen'){
+      // 펜은 얇고 선명한 잉크 결이 진행 방향으로 길게 남도록 합니다.
+      const tangentShift=(-0.90+r()*1.80)*baseSize, normalShift=jitter(r,baseSize*0.05);
+      const cx=s.x+s.dx*tangentShift+s.nx*normalShift, cy=s.y+s.dy*tangentShift+s.ny*normalShift;
+      const len=baseSize*(0.90+r()*2.10), wid=Math.max(0.24,baseSize*(0.10+r()*0.16));
+      const rot=ang*180/Math.PI+jitter(r,1.8), rad=rot*Math.PI/180;
+      const x1=cx-Math.cos(rad)*len/2, y1=cy-Math.sin(rad)*len/2;
+      const x2=cx+Math.cos(rad)*len/2, y2=cy+Math.sin(rad)*len/2;
+      arr.push(`<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${v.stroke}" stroke-width="${wid.toFixed(2)}" stroke-linecap="round" stroke-opacity="${(opacityBase*0.82).toFixed(3)}"/>`);
     }else if(material==='marker'){
       // 형광펜처럼 넓고 평평한 사각 닙 자국을 여러 번 겹쳐,
       // 힘을 준 부분은 진하고 가장자리는 실제 필기 흔적처럼 달라지게 합니다.
@@ -724,7 +765,7 @@ function render(){
   parts.push(circleMarkup(circles, v));
 
   shapeLayer.innerHTML = parts.join('');
-  $('status').textContent = `현재: ${shapeNames[shape]} · ${materialNames[material]} · dynamic ${v.dynamic} · microFreq ${v.microFreq} · texture ${v.texture} · grain ${v.grain}`;
+  $('status').textContent = `현재: ${shapeNames[shape]} · ${materialNames[material]} · pressure ${v.pressure} · dynamic ${v.dynamic} · microFreq ${v.microFreq} · texture ${v.texture} · grain ${v.grain}`;
 }
 
 function svgText(){
@@ -736,7 +777,7 @@ $('saveSvg').addEventListener('click', ()=>{
   const blob = new Blob([svgText()], {type:'image/svg+xml'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'malpoongsun-factory-v1.8.svg';
+  a.download = 'malpoongsun-factory-v1.9.svg';
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
   $('status').textContent = 'SVG 저장 완료 — Figma에 드래그하면 벡터로 사용할 수 있습니다.';
@@ -756,7 +797,7 @@ $('savePng').addEventListener('click', ()=>{
     c.toBlob(png=>{
       const a = document.createElement('a');
       a.href = URL.createObjectURL(png);
-      a.download = 'malpoongsun-factory-v1.8.png';
+      a.download = 'malpoongsun-factory-v1.9.png';
       a.click();
       setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
       $('status').textContent = 'PNG 저장 완료';
