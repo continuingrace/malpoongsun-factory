@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>malpoongsun factory v2.7 · 말풍선 제조기</title>
+<title>malpoongsun factory v2.8 · 말풍선 제조기</title>
 <style>
 :root{
   --bg:#f3f3f5; --panel:#fff; --border:#d9d9de; --text:#111; --muted:#686870;
@@ -56,9 +56,9 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
   <div class="header">
     <div>
       <h1>말풍선 제조기</h1>
-      <p>말풍선 제조기 · v2.7 — 안전 입자 크기 자동화</p>
+      <p>말풍선 제조기 · v2.8 — 꼬리 경로 복구</p>
     </div>
-    <span class="badge">local v2.7</span>
+    <span class="badge">local v2.8</span>
   </div>
 
   <div class="layout">
@@ -404,15 +404,16 @@ function pointTailSegment(fromPt, toPt, tipX, tipY, tw, th, tipRadius, tanRight,
   const right=fromPt, left=toPt;
   const tip=[tipX,tipY];
   const cap=Math.max(0,Math.min(18,+tipRadius||0,Math.hypot(tipX-right[0],tipY-right[1])*0.26,Math.hypot(tipX-left[0],tipY-left[1])*0.26));
-  if(cap < 0.01) return join(linePts(right,tip,7),linePts(tip,left,7));
+  const straight=(a,b)=>linePts(a[0],a[1],b[0],b[1],7);
+  if(cap < 0.01) return join(straight(right,tip),straight(tip,left));
   const toRight=[right[0]-tipX,right[1]-tipY], toLeft=[left[0]-tipX,left[1]-tipY];
   const rightDistance=Math.hypot(toRight[0],toRight[1])||1, leftDistance=Math.hypot(toLeft[0],toLeft[1])||1;
   const rightCap=[tipX+toRight[0]/rightDistance*cap,tipY+toRight[1]/rightDistance*cap];
   const leftCap=[tipX+toLeft[0]/leftDistance*cap,tipY+toLeft[1]/leftDistance*cap];
   let p=[];
-  p=join(p,linePts(right,rightCap,7));
+  p=join(p,straight(right,rightCap));
   p=join(p,bezierPts(rightCap,[tipX+cap*0.55,tipY+cap*0.86],[tipX-cap*0.55,tipY+cap*0.86],leftCap,10));
-  p=join(p,linePts(leftCap,left,7));
+  p=join(p,straight(leftCap,left));
   return p;
 }
 function ellipseBalloonPts(cx,cy,rx,ry,tp,tw,th,lean,tipRadius,kind){
@@ -819,7 +820,7 @@ $('saveSvg').addEventListener('click', ()=>{
   const blob = new Blob([svgText()], {type:'image/svg+xml'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'malpoongsun-factory-v2.7.svg';
+  a.download = 'malpoongsun-factory-v2.8.svg';
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
   $('status').textContent = 'SVG 저장 완료 — Figma에 드래그하면 벡터로 사용할 수 있습니다.';
@@ -839,7 +840,7 @@ $('savePng').addEventListener('click', ()=>{
     c.toBlob(png=>{
       const a = document.createElement('a');
       a.href = URL.createObjectURL(png);
-      a.download = 'malpoongsun-factory-v2.7.png';
+      a.download = 'malpoongsun-factory-v2.8.png';
       a.click();
       setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
       $('status').textContent = 'PNG 저장 완료';
