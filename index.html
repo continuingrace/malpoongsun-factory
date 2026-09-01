@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>malpoongsun factory v2.1 · 말풍선 제조기</title>
+<title>malpoongsun factory v2.2 · 말풍선 제조기</title>
 <style>
 :root{
   --bg:#f3f3f5; --panel:#fff; --border:#d9d9de; --text:#111; --muted:#686870;
@@ -56,9 +56,9 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
   <div class="header">
     <div>
       <h1>말풍선 제조기</h1>
-      <p>말풍선 제조기 · v2.1 — 연필 흑연·마커 잉크 질감 개선</p>
+      <p>말풍선 제조기 · v2.2 — 마커 본선 제거·접합·목탄 농도 개선</p>
     </div>
-    <span class="badge">local v2.1</span>
+    <span class="badge">local v2.2</span>
   </div>
 
   <div class="layout">
@@ -620,29 +620,25 @@ function textureMarks(samples, v){
         arr.push(`<line x1="${(hx-Math.cos(hatchAng)*hatchLen/2).toFixed(2)}" y1="${(hy-Math.sin(hatchAng)*hatchLen/2).toFixed(2)}" x2="${(hx+Math.cos(hatchAng)*hatchLen/2).toFixed(2)}" y2="${(hy+Math.sin(hatchAng)*hatchLen/2).toFixed(2)}" stroke="${v.stroke}" stroke-width="${Math.max(0.16,wid*(0.34+r()*0.28)).toFixed(2)}" stroke-linecap="butt" stroke-opacity="${(graphiteOpacity*(0.26+pressure*0.25)).toFixed(3)}"/>`);
       }
     }else if(material==='charcoal'){
-      // 목탄은 매끈한 점무늬가 아니라, 압력에 따라 폭과 농도가 달라지는
-      // 짧은 겹침 자국과 마른 섬유 가장자리로 표현합니다.
+      // 목탄은 뾰족한 조각이 아니라, 방향성이 있는 짧은 건식 스트로크를 겹칩니다.
       const pressure=v.pressure/100;
+      const localPressure=pressure*(0.42+r()*0.58);
       const tangentShift=(-0.90+r()*1.80)*baseSize;
-      const normalBand=baseSize*(0.08+pressure*0.16);
+      const normalBand=baseSize*(0.10+localPressure*0.18);
       const cx=s.x+s.dx*tangentShift+s.nx*(-normalBand+r()*normalBand*2);
       const cy=s.y+s.dy*tangentShift+s.ny*(-normalBand+r()*normalBand*2);
-      const len=baseSize*(1.35+r()*2.60)*(0.88+pressure*0.38);
-      const wid=Math.max(0.55,baseSize*(0.34+r()*0.48)*(0.92+pressure*0.55));
+      const len=baseSize*(1.20+r()*2.30)*(0.84+localPressure*0.34);
+      const wid=Math.max(0.36,baseSize*(0.16+r()*0.28)*(0.78+localPressure*0.40));
       const rot=ang*180/Math.PI+jitter(r,5.5), rad=rot*Math.PI/180;
-      const tx=Math.cos(rad)*len/2, ty=Math.sin(rad)*len/2;
-      const nx=-Math.sin(rad)*wid/2, ny=Math.cos(rad)*wid/2;
-      const q1=[cx-tx+nx*(0.84+r()*0.22),cy-ty+ny*(0.84+r()*0.22)];
-      const q2=[cx+tx+nx*(0.84+r()*0.22),cy+ty+ny*(0.84+r()*0.22)];
-      const q3=[cx+tx-nx*(0.84+r()*0.22),cy+ty-ny*(0.84+r()*0.22)];
-      const q4=[cx-tx-nx*(0.84+r()*0.22),cy-ty-ny*(0.84+r()*0.22)];
-      const roughPath=`M ${q1[0].toFixed(2)} ${q1[1].toFixed(2)} L ${q2[0].toFixed(2)} ${q2[1].toFixed(2)} Q ${cx.toFixed(2)} ${(cy+ny*0.18).toFixed(2)} ${q3[0].toFixed(2)} ${q3[1].toFixed(2)} L ${q4[0].toFixed(2)} ${q4[1].toFixed(2)} Z`;
-      arr.push(`<path d="${roughPath}" fill="${v.stroke}" fill-opacity="${(opacityBase*(0.72+pressure*0.58)).toFixed(3)}"/>`);
-      if(r()<0.72){
-        const fiberLen=len*(0.58+r()*0.48), fiberWid=Math.max(0.22,wid*(0.12+r()*0.16));
-        const offset=jitter(r,wid*0.55), fx=cx+Math.cos(rad+Math.PI/2)*offset, fy=cy+Math.sin(rad+Math.PI/2)*offset;
+      const x1=cx-Math.cos(rad)*len/2, y1=cy-Math.sin(rad)*len/2;
+      const x2=cx+Math.cos(rad)*len/2, y2=cy+Math.sin(rad)*len/2;
+      const dryOpacity=Math.min(0.32,opacityBase*(0.26+localPressure*0.34)*(0.56+r()*0.72));
+      arr.push(`<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${v.stroke}" stroke-width="${wid.toFixed(2)}" stroke-linecap="round" stroke-opacity="${dryOpacity.toFixed(3)}"/>`);
+      if(r()<0.76){
+        const fiberLen=len*(0.48+r()*0.48), fiberOffset=jitter(r,baseSize*(0.20+localPressure*0.24));
+        const fx=cx+s.nx*fiberOffset, fy=cy+s.ny*fiberOffset;
         const fx1=fx-Math.cos(rad)*fiberLen/2, fy1=fy-Math.sin(rad)*fiberLen/2, fx2=fx+Math.cos(rad)*fiberLen/2, fy2=fy+Math.sin(rad)*fiberLen/2;
-        arr.push(`<line x1="${fx1.toFixed(2)}" y1="${fy1.toFixed(2)}" x2="${fx2.toFixed(2)}" y2="${fy2.toFixed(2)}" stroke="${v.stroke}" stroke-width="${fiberWid.toFixed(2)}" stroke-linecap="butt" stroke-opacity="${(opacityBase*(0.34+pressure*0.42)).toFixed(3)}"/>`);
+        arr.push(`<line x1="${fx1.toFixed(2)}" y1="${fy1.toFixed(2)}" x2="${fx2.toFixed(2)}" y2="${fy2.toFixed(2)}" stroke="${v.stroke}" stroke-width="${Math.max(0.18,wid*(0.28+r()*0.34)).toFixed(2)}" stroke-linecap="round" stroke-opacity="${Math.min(0.22,dryOpacity*(0.42+localPressure*0.26)).toFixed(3)}"/>`);
       }
     }else if(material==='felt'){
       // 펠트팁은 마커보다 둥글고 부드럽지만, 한 번에 균일하지 않은
@@ -774,10 +770,9 @@ function render(){
   const pressureMainOpacity=0.86+p*0.14;
   const pressureAuxOpacity=0.45+p*0.85;
   if(markerMode){
-    // 마커는 가는 본선을 안쪽에 남기지 않고, 반투명한 사각 닙 한 겹으로 덮어 표현합니다.
-    const markerWidth=v.sw*(1.38+p*0.88);
-    const markerOpacity=v.so*(0.36+p*0.22);
-    parts.push(`<path d="${dMain}" fill="${closed ? v.fill : 'none'}" fill-opacity="${closed ? v.fo : 0}" stroke="${v.stroke}" stroke-width="${markerWidth.toFixed(2)}" stroke-linecap="square" stroke-linejoin="miter" stroke-opacity="${markerOpacity.toFixed(3)}"/>`);
+    // 마커는 본선/보조선을 따로 깔지 않고, 질감 함수가 만든 사각 닙 흔적만 사용합니다.
+    // 닫힌 도형의 내부 채움만 별도로 남겨 선 안쪽에 가는 라인이 생기지 않게 합니다.
+    if(closed && v.fo>0) parts.push(`<path d="${dMain}" fill="${v.fill}" fill-opacity="${v.fo.toFixed(3)}" stroke="none"/>`);
   }else if(material==='pencil'){
     // 연필 외곽선도 여러 번의 얇은 흑연 선으로 남겨서 두꺼운 값에서도 검은 띠가 되지 않게 합니다.
     const graphitePressure=0.34+p*0.42;
@@ -785,6 +780,16 @@ function render(){
     parts.push(`<path d="${dMain}" fill="${closed ? v.fill : 'none'}" fill-opacity="${closed ? v.fo : 0}" stroke="${v.stroke}" stroke-width="${(v.sw*graphitePressure).toFixed(2)}" stroke-linecap="butt" stroke-linejoin="round" stroke-opacity="${graphiteOpacity.toFixed(3)}"/>`);
     parts.push(`<path d="${d2}" fill="none" stroke="${v.stroke}" stroke-width="${(v.sw*(0.24+p*0.30)).toFixed(2)}" stroke-linecap="butt" stroke-linejoin="round" stroke-opacity="${(v.so*(0.13+p*0.20)).toFixed(3)}"/>`);
     parts.push(`<path d="${d3}" fill="none" stroke="${v.stroke}" stroke-width="${(v.sw*(0.16+p*0.22)).toFixed(2)}" stroke-linecap="butt" stroke-linejoin="round" stroke-opacity="${(v.so*(0.10+p*0.16)).toFixed(3)}"/>`);
+  }else if(material==='charcoal'){
+    // 목탄은 매끈한 외곽선보다 얇고 낮은 농도의 바탕선 위에 마른 입자를 쌓습니다.
+    const charcoalPressure=0.46+p*0.34;
+    const charcoalOpacity=v.so*(0.22+p*0.26);
+    parts.push(`<path d="${dMain}" fill="${closed ? v.fill : 'none'}" fill-opacity="${closed ? v.fo : 0}" stroke="${v.stroke}" stroke-width="${(v.sw*charcoalPressure).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${charcoalOpacity.toFixed(3)}"/>`);
+    parts.push(`<path d="${d2}" fill="none" stroke="${v.stroke}" stroke-width="${(v.sw*(0.26+p*0.22)).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(v.so*(0.12+p*0.16)).toFixed(3)}"/>`);
+    parts.push(`<path d="${d3}" fill="none" stroke="${v.stroke}" stroke-width="${(v.sw*(0.18+p*0.16)).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(v.so*(0.08+p*0.12)).toFixed(3)}"/>`);
+  }else if(material==='felt'){
+    // 펠트팁은 접합부를 여러 외곽선이 덧그리지 않도록 단일 본선으로 유지합니다.
+    parts.push(`<path d="${dMain}" fill="${closed ? v.fill : 'none'}" fill-opacity="${closed ? v.fo : 0}" stroke="${v.stroke}" stroke-width="${(v.sw*mainPressureWidth).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(v.so*densityOpacity*pressureMainOpacity).toFixed(3)}"/>`);
   }else{
     parts.push(`<path d="${dMain}" fill="${closed ? v.fill : 'none'}" fill-opacity="${closed ? v.fo : 0}" stroke="${v.stroke}" stroke-width="${(v.sw*mainPressureWidth).toFixed(2)}" stroke-linecap="${strokeCap}" stroke-linejoin="round" stroke-opacity="${(v.so*densityOpacity*pressureMainOpacity).toFixed(3)}"/>`);
     parts.push(`<path d="${d2}" fill="none" stroke="${v.stroke}" stroke-width="${(v.sw * pressureWidth).toFixed(2)}" stroke-linecap="${strokeCap}" stroke-linejoin="round" stroke-opacity="${(v.so*cfg.over2*densityOpacity*pressureAuxOpacity).toFixed(3)}"/>`);
@@ -806,7 +811,7 @@ $('saveSvg').addEventListener('click', ()=>{
   const blob = new Blob([svgText()], {type:'image/svg+xml'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'malpoongsun-factory-v2.1.svg';
+  a.download = 'malpoongsun-factory-v2.2.svg';
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
   $('status').textContent = 'SVG 저장 완료 — Figma에 드래그하면 벡터로 사용할 수 있습니다.';
@@ -826,7 +831,7 @@ $('savePng').addEventListener('click', ()=>{
     c.toBlob(png=>{
       const a = document.createElement('a');
       a.href = URL.createObjectURL(png);
-      a.download = 'malpoongsun-factory-v2.1.png';
+      a.download = 'malpoongsun-factory-v2.2.png';
       a.click();
       setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
       $('status').textContent = 'PNG 저장 완료';
