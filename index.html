@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>malpoongsun factory v1.9 · 말풍선 제조기</title>
+<title>malpoongsun factory v2.1 · 말풍선 제조기</title>
 <style>
 :root{
   --bg:#f3f3f5; --panel:#fff; --border:#d9d9de; --text:#111; --muted:#686870;
@@ -56,9 +56,9 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
   <div class="header">
     <div>
       <h1>말풍선 제조기</h1>
-      <p>말풍선 제조기 · v1.9 — 재질별 선 질감·꼬리 끝 개선</p>
+      <p>말풍선 제조기 · v2.1 — 연필 흑연·마커 잉크 질감 개선</p>
     </div>
-    <span class="badge">local v1.9</span>
+    <span class="badge">local v2.1</span>
   </div>
 
   <div class="layout">
@@ -150,9 +150,8 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
 
       <div class="section" id="bubbleSection">
         <h2>BUBBLE TAIL</h2>
-        <div class="grid3">
+        <div class="grid2">
           <button class="btn active" data-tail-type="point">뾰족 꼬리</button>
-          <button class="btn" data-tail-type="curve">살짝 둥근 끝</button>
           <button class="btn" data-tail-type="thought">생각 꼬리</button>
         </div>
         <div class="grid3" style="margin-top:8px">
@@ -164,6 +163,7 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
         <div class="field"><label>꼬리 폭 / 원 간격 기준</label><div class="pair"><input id="tailWidth" type="range" min="18" max="160" value="52"><input id="tailWidthN" type="number" min="18" max="160" value="52"></div></div>
         <div class="field"><label>꼬리 길이</label><div class="pair"><input id="tailHeight" type="range" min="10" max="120" value="36"><input id="tailHeightN" type="number" min="10" max="120" value="36"></div></div>
         <div class="field"><label>꼬리 방향 — 왼쪽 / 오른쪽으로 향하기</label><div class="pair"><input id="tailLean" type="range" min="-150" max="150" value="0"><input id="tailLeanN" type="number" min="-150" max="150" value="0"></div></div>
+        <div class="field point-only"><label>뾰족꼬리 끝 레이디우스 — 0은 완전한 점, 높일수록 끝만 살짝 둥글게</label><div class="pair"><input id="tailTipRadius" type="range" min="0" max="18" step="0.5" value="0"><input id="tailTipRadiusN" type="number" min="0" max="18" step="0.5" value="0"></div></div>
         <div class="field thought-only"><label>생각 원 크기</label><div class="pair"><input id="thoughtSize" type="range" min="40" max="180" value="100"><input id="thoughtSizeN" type="number" min="40" max="180" value="100"></div></div>
         <div class="field thought-only"><label>생각 원 선 굵기</label><div class="pair"><input id="thoughtStroke" type="range" min="30" max="180" value="78"><input id="thoughtStrokeN" type="number" min="30" max="180" value="78"></div></div>
         <div class="grid2 thought-only">
@@ -173,12 +173,12 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
         <div class="field thought-only"><label>생각 원 간격 — 원끼리 절대 닿지 않도록 최소 간격 자동 보장</label><div class="pair"><input id="thoughtSpacing" type="range" min="50" max="220" value="110"><input id="thoughtSpacingN" type="number" min="50" max="220" value="110"></div></div>
         <div class="field thought-only"><label>본체 ↔ 첫 생각원 간격</label><div class="pair"><input id="thoughtBodyGap" type="range" min="6" max="120" value="24"><input id="thoughtBodyGapN" type="number" min="6" max="120" value="24"></div></div>
         <div class="field thought-only"><label>생각 원 기울기 — 원 3개의 진행 방향 각도</label><div class="pair"><input id="thoughtAngle" type="range" min="-70" max="70" value="0"><input id="thoughtAngleN" type="number" min="-70" max="70" value="0"></div></div>
-        <div class="small">생각 꼬리는 본체와 떨어져 있고, 가장 위 원이 조금 더 크며 아래로 갈수록 점진적으로 작아지도록 계산됩니다.</div>
+        <div class="small">생각 꼬리는 본체 가까운 원이 가장 크고 바깥쪽으로 갈수록 확실히 작아지도록 계산됩니다. 곡선 꼬리는 제거하고 뾰족꼬리 끝 레이디우스로 끝부분만 둥글게 조절합니다.</div>
       </div>
 
       <div class="section">
-        <h2>SEED</h2>
-        <div class="field"><label>같은 값이면 같은 질감 / 스트로크 분포</label><input id="seed" type="number" min="1" max="999999" value="48291"></div>
+        <h2>TEXTURE PATTERN</h2>
+        <div class="field"><label>질감 패턴 번호 — 같은 번호는 같은 결과, 다른 번호는 다른 질감</label><input id="seed" type="number" min="1" max="999999" value="48291"></div>
       </div>
     </aside>
   </div>
@@ -188,6 +188,14 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
 (()=>{
 const $ = id => document.getElementById(id);
 const shapeLayer = $('shapeLayer');
+let renderFrame = 0;
+function scheduleRender(){
+  if(renderFrame) return;
+  renderFrame = requestAnimationFrame(()=>{
+    renderFrame = 0;
+    render();
+  });
+}
 
 let shape = 'bubble';
 let material = 'felt';
@@ -209,12 +217,12 @@ const pairs = [
   ['strokeOpacity','strokeOpacityN'],['fillOpacity','fillOpacityN'],
   ['wobble','wobbleN'],['dynamic','dynamicN'],['microFreq','microFreqN'],['texture','textureN'],['grain','grainN'],
   ['pressure','pressureN'],['density','densityN'],
-  ['tailPos','tailPosN'],['tailWidth','tailWidthN'],['tailHeight','tailHeightN'],['tailLean','tailLeanN'],['thoughtSize','thoughtSizeN'],['thoughtStroke','thoughtStrokeN'],['thoughtFillOpacity','thoughtFillOpacityN'],['thoughtSpacing','thoughtSpacingN'],['thoughtBodyGap','thoughtBodyGapN'],['thoughtAngle','thoughtAngleN']
+  ['tailPos','tailPosN'],['tailWidth','tailWidthN'],['tailHeight','tailHeightN'],['tailLean','tailLeanN'],['tailTipRadius','tailTipRadiusN'],['thoughtSize','thoughtSizeN'],['thoughtStroke','thoughtStrokeN'],['thoughtFillOpacity','thoughtFillOpacityN'],['thoughtSpacing','thoughtSpacingN'],['thoughtBodyGap','thoughtBodyGapN'],['thoughtAngle','thoughtAngleN']
 ];
 pairs.forEach(([a,b])=>{
   const A=$(a), B=$(b);
-  A.addEventListener('input', ()=>{B.value=A.value; render();});
-  B.addEventListener('input', ()=>{A.value=B.value; render();});
+  A.addEventListener('input', ()=>{B.value=A.value; scheduleRender();});
+  B.addEventListener('input', ()=>{A.value=B.value; scheduleRender();});
 });
 
 ['strokeColor','fillColor','thoughtFillColor','rtl','rtr','rbr','rbl','seed'].forEach(id=>{
@@ -224,7 +232,7 @@ pairs.forEach(([a,b])=>{
       $('rbr').value = $('rtl').value;
       $('rbl').value = $('rtl').value;
     }
-    render();
+    scheduleRender();
   });
 });
 $('linkRadius').addEventListener('change', ()=>{
@@ -233,7 +241,7 @@ $('linkRadius').addEventListener('change', ()=>{
     $('rbr').value = $('rtl').value;
     $('rbl').value = $('rtl').value;
   }
-  render();
+  scheduleRender();
 });
 
 document.querySelectorAll('[data-shape]').forEach(btn=>{
@@ -243,7 +251,7 @@ document.querySelectorAll('[data-shape]').forEach(btn=>{
     shape = btn.dataset.shape;
     $('shapeBadge').textContent = shapeNames[shape];
     $('bubbleSection').style.display = (shape==='bubble' || shape==='ellipse') ? 'block' : 'none';
-    render();
+    scheduleRender();
   });
 });
 
@@ -258,7 +266,7 @@ document.querySelectorAll('[data-material]').forEach(btn=>{
       $(k+'N').value = p[k];
     });
     $('materialBadge').textContent = materialNames[material];
-    render();
+    scheduleRender();
   });
 });
 
@@ -268,7 +276,8 @@ document.querySelectorAll('[data-tail-type]').forEach(btn=>{
     btn.classList.add('active');
     tailType = btn.dataset.tailType;
     document.querySelectorAll('.thought-only').forEach(el => el.style.display = tailType==='thought' ? 'block' : 'none');
-    render();
+    document.querySelectorAll('.point-only').forEach(el => el.style.display = tailType==='point' ? 'block' : 'none');
+    scheduleRender();
   });
 });
 
@@ -279,13 +288,13 @@ document.querySelectorAll('[data-tail-preset]').forEach(btn=>{
     const map = {left:0.28, center:0.50, right:0.72};
     $('tailPos').value = map[btn.dataset.tailPreset];
     $('tailPosN').value = map[btn.dataset.tailPreset];
-    render();
+    scheduleRender();
   });
 });
 
 $('randomize').addEventListener('click', ()=>{
   $('seed').value = Math.floor(Math.random()*999998)+1;
-  render();
+  scheduleRender();
 });
 
 function rng(seed){
@@ -391,40 +400,31 @@ function collectTopArc(points, leftIdx, rightIdx){
   }
   return out;
 }
-function roundedTailSegment(fromPt, toPt, tipX, tipY, tw, th, tanRight, tanLeft){
-  const right = fromPt;
-  const left = toPt;
-  const cap = Math.max(7, Math.min(20, tw*0.20));
-  const rt = tanRight || [1,0.15];
-  const lt = tanLeft || [1,0.15];
-  const rlen=Math.hypot(rt[0],rt[1])||1, llen=Math.hypot(lt[0],lt[1])||1;
-  const rn=[rt[0]/rlen,rt[1]/rlen], ln=[lt[0]/llen,lt[1]/llen];
-  const rightCap=[tipX+cap*0.58,tipY-cap*0.05];
-  const leftCap=[tipX-cap*0.58,tipY-cap*0.05];
-  let p=[];
-  p=join(p,bezierPts(right,[right[0]+rn[0]*tw*0.22,right[1]+rn[1]*tw*0.22],[tipX+tw*0.24,tipY-th*0.10],rightCap,16));
-  p=join(p,bezierPts(rightCap,[tipX+cap*0.24,tipY+cap*0.82],[tipX-cap*0.24,tipY+cap*0.82],leftCap,12));
-  // 끝점에서는 제어점을 접선의 반대쪽에 둬야 곡선이 접선 방향으로 자연스럽게 들어갑니다.
-  p=join(p,bezierPts(leftCap,[tipX-tw*0.24,tipY-th*0.10],[left[0]-ln[0]*tw*0.22,left[1]-ln[1]*tw*0.22],left,16));
-  return p;
-}
-function softPointTailSegment(fromPt, toPt, tipX, tipY, tw, th, tanRight, tanLeft){
-  // 뾰족 꼬리의 형태는 유지하고, 끝 6~8px만 둥근 캡처럼 처리합니다.
+function pointTailSegment(fromPt, toPt, tipX, tipY, tw, th, tipRadius, tanRight, tanLeft){
+  // 꼬리 본체는 두 직선에 가깝게 유지하고, 지정한 반경만 끝점에 적용합니다.
   const right=fromPt, left=toPt;
-  const cap=Math.max(3.5,Math.min(8,tw*0.09));
+  const cap=Math.max(0,Math.min(18,+tipRadius||0));
   const rt=tanRight||[1,0], lt=tanLeft||[1,0];
   const rlen=Math.hypot(rt[0],rt[1])||1, llen=Math.hypot(lt[0],lt[1])||1;
   const rn=[rt[0]/rlen,rt[1]/rlen], ln=[lt[0]/llen,lt[1]/llen];
+  const rightControl=[tipX+tw*0.16,tipY-th*0.14];
+  const leftControl=[tipX-tw*0.16,tipY-th*0.14];
+  if(cap < 0.01){
+    return join(
+      bezierPts(right,[right[0]+rn[0]*tw*0.18,right[1]+rn[1]*tw*0.18],rightControl,[tipX,tipY],14),
+      bezierPts([tipX,tipY],leftControl,[left[0]-ln[0]*tw*0.18,left[1]-ln[1]*tw*0.18],left,14)
+    );
+  }
   const rightCap=[tipX+cap*0.55,tipY-cap*0.62];
   const leftCap=[tipX-cap*0.55,tipY-cap*0.62];
   let p=[];
-  p=join(p,bezierPts(right,[right[0]+rn[0]*tw*0.20,right[1]+rn[1]*tw*0.20],[tipX+tw*0.13,tipY-th*0.12],rightCap,14));
+  p=join(p,bezierPts(right,[right[0]+rn[0]*tw*0.18,right[1]+rn[1]*tw*0.18],rightControl,rightCap,14));
   p=join(p,bezierPts(rightCap,[tipX+cap*0.78,tipY-cap*0.10],[tipX+cap*0.70,tipY+cap*0.26],[tipX,tipY],8));
   p=join(p,bezierPts([tipX,tipY],[tipX-cap*0.70,tipY+cap*0.26],[tipX-cap*0.78,tipY-cap*0.10],leftCap,8));
-  p=join(p,bezierPts(leftCap,[tipX-tw*0.13,tipY-th*0.12],[left[0]-ln[0]*tw*0.20,left[1]-ln[1]*tw*0.20],left,14));
+  p=join(p,bezierPts(leftCap,leftControl,[left[0]-ln[0]*tw*0.18,left[1]-ln[1]*tw*0.18],left,14));
   return p;
 }
-function ellipseBalloonPts(cx,cy,rx,ry,tp,tw,th,lean,kind){
+function ellipseBalloonPts(cx,cy,rx,ry,tp,tw,th,lean,tipRadius,kind){
   const full=ellipsePts(cx,cy,rx,ry);
   const c=cx+(tp-0.5)*rx*1.20;
   const leftX=Math.max(cx-rx*0.80,c-tw/2), rightX=Math.min(cx+rx*0.80,c+tw/2);
@@ -444,19 +444,12 @@ function ellipseBalloonPts(cx,cy,rx,ry,tp,tw,th,lean,kind){
   let p=[rightPt];
   function ellipseTangentAt(x,y){const cosA=(x-cx)/rx,sinA=(y-cy)/ry; return [-rx*sinA,ry*cosA];}
   const tanRight=ellipseTangentAt(rightX,rightY), tanLeft=ellipseTangentAt(leftX,leftY);
-  if(kind==='point'){
-    const rlen=Math.hypot(tanRight[0],tanRight[1])||1, llen=Math.hypot(tanLeft[0],tanLeft[1])||1;
-    const rn=[tanRight[0]/rlen,tanRight[1]/rlen], ln=[tanLeft[0]/llen,tanLeft[1]/llen];
-    p=join(p,bezierPts(rightPt,[rightX+rn[0]*tw*0.18,rightY+rn[1]*tw*0.18],[tipX+tw*0.16,tipY-th*0.14],[tipX,tipY],14));
-    p=join(p,bezierPts([tipX,tipY],[tipX-tw*0.16,tipY-th*0.14],[leftX-ln[0]*tw*0.18,leftY-ln[1]*tw*0.18],leftPt,14));
-  }else{
-    p=join(p,kind==='curve' ? softPointTailSegment(rightPt,leftPt,tipX,tipY,tw,th,tanRight,tanLeft) : roundedTailSegment(rightPt,leftPt,tipX,tipY,tw,th,tanRight,tanLeft));
-  }
+  if(kind==='point') p=join(p,pointTailSegment(rightPt,leftPt,tipX,tipY,tw,th,tipRadius,tanRight,tanLeft));
   p=join(p,topArc);
   return {outline:p,meta:{anchorX:c,anchorY,tipX,tipY}};
 }
 
-function bubbleOutlinePts(x,y,w,h,r,tp,tw,th,lean,kind){
+function bubbleOutlinePts(x,y,w,h,r,tp,tw,th,lean,tipRadius,kind){
   let [tl,tr,br,bl] = clampRadii(w,h,r), p=[];
   const bottom = y+h;
   const c = x + w*tp;
@@ -472,10 +465,8 @@ function bubbleOutlinePts(x,y,w,h,r,tp,tw,th,lean,kind){
   p=join(p,linePts(x+w-br,bottom,right,bottom,12));
 
   if(kind==='point'){
-    p=join(p,linePts(right,bottom,tipX,tipY,11));
-    p=join(p,linePts(tipX,tipY,left,bottom,11));
-  } else if(kind==='curve'){
-    p=join(p,softPointTailSegment([right,bottom], [left,bottom], tipX, tipY, tw, th));
+    // 본체 하단선은 오른쪽에서 들어와 왼쪽으로 나가므로 양쪽 접선 방향을 명시합니다.
+    p=join(p,pointTailSegment([right,bottom],[left,bottom],tipX,tipY,tw,th,tipRadius,[1,0],[-1,0]));
   } else {
     p=join(p,linePts(right,bottom,left,bottom,12));
   }
@@ -493,8 +484,8 @@ function thoughtTailCircles(meta, v){
   const spacingScale = v.thoughtSpacing / 100;
   const bodyGap = Math.max(6, v.thoughtBodyGap);
 
-  const widths = [20, 15, 10.5].map(vv => vv * sizeScale);
-  const heights = [16, 12, 8.6].map(vv => vv * sizeScale);
+  const widths = [28, 17, 8.5].map(vv => vv * sizeScale);
+  const heights = [22, 13, 6.8].map(vv => vv * sizeScale);
 
   const angle = (v.thoughtAngle * Math.PI / 180);
   const dirX = Math.sin(angle);
@@ -560,9 +551,10 @@ function sampleAlong(points, count){
   let total=0;
   for(let i=1;i<points.length;i++){ const l=pointDistance(points[i-1], points[i]); segs.push(l); total+=l; }
   const result=[];
+  if(!segs.length) return points.map(p=>({x:p[0],y:p[1],dx:1,dy:0,nx:0,ny:1}));
+  let acc=0, idx=0;
   for(let k=0;k<count;k++){
     const target = total * (k/Math.max(1,count-1));
-    let acc=0, idx=0;
     while(idx<segs.length && acc+segs[idx] < target){ acc+=segs[idx]; idx++; }
     idx=Math.min(idx, segs.length-1);
     const a = points[idx], b = points[idx+1] || points[idx];
@@ -590,10 +582,13 @@ function textureMarks(samples, v){
   const textureLevel=Math.max(0,v.texture/100);
   const tex=Math.min(1,textureLevel);
   const dens=Math.min(1.6,Math.max(0.2,v.density/100));
-  const densityCountBoost=0.20+Math.pow(dens,1.7)*3.80;
-  // 100까지는 기존 분포를 유지하고, 100~200 구간은 표면 흔적 수를 추가로 늘립니다.
-  const textureCountBoost=0.10+Math.pow(textureLevel,1.15)*5.90;
-  const count=Math.max(0,Math.floor(samples.length*densityCountBoost*textureCountBoost*cfg.markMultiplier));
+  const densityNorm=Math.min(1,Math.max(0,v.density/200));
+  const textureNorm=Math.min(1,Math.max(0,v.texture/200));
+  // 0~200 전체를 사용하되, 100 이후에도 흔적 수가 확실히 계속 늘어나도록 분포를 재매핑합니다.
+  const densityCountBoost=0.25+Math.pow(densityNorm,1.25)*3.15;
+  const textureCountBoost=0.12+Math.pow(textureNorm,1.10)*3.55;
+  const rawCount=samples.length*densityCountBoost*textureCountBoost*cfg.markMultiplier;
+  const count=Math.min(24000,Math.max(0,Math.floor(rawCount)));
   const baseSize=(0.62+(v.grain/100)*2.85)*cfg.sizeBias;
   const arr=[];
   for(let i=0;i<count;i++){
@@ -602,10 +597,28 @@ function textureMarks(samples, v){
     const pressureInk=0.72+(v.pressure/100)*0.52;
     const opacityBase=cfg.markOpacity*(0.28+tex*0.95)*(0.35+dens*0.85)*(0.45+r()*0.85)*pressureInk;
     if(material==='pencil'){
-      const tangentShift=(-0.65+r()*1.30)*baseSize, normalBand=baseSize*(0.02+r()*0.07);
-      const cx=s.x+s.dx*tangentShift+s.nx*(-normalBand+r()*normalBand*2), cy=s.y+s.dy*tangentShift+s.ny*(-normalBand+r()*normalBand*2);
-      const len=baseSize*(0.85+r()*1.35), wid=Math.max(0.18,baseSize*(0.055+r()*0.10)), rot=ang*180/Math.PI+jitter(r,6);
-      arr.push(`<ellipse cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" rx="${(len*0.54).toFixed(2)}" ry="${wid.toFixed(2)}" transform="rotate(${rot.toFixed(2)} ${cx.toFixed(2)} ${cy.toFixed(2)})" fill="${v.stroke}" fill-opacity="${opacityBase.toFixed(3)}"/>`);
+      // 연필은 한 덩어리의 외곽선이 아니라, 종이 결을 통과하는 흑연 스트로크의 층으로 만듭니다.
+      // 필압이 올라가면 선폭·농도·반복 횟수가 함께 늘지만, 작은 종이 틈은 남깁니다.
+      const pressure=v.pressure/100;
+      const tangentShift=(-0.82+r()*1.64)*baseSize;
+      const paperTooth=baseSize*(0.04+pressure*0.13);
+      const cx=s.x+s.dx*tangentShift+s.nx*jitter(r,paperTooth), cy=s.y+s.dy*tangentShift+s.ny*jitter(r,paperTooth);
+      const len=baseSize*(1.10+r()*2.20)*(0.78+pressure*0.34);
+      const wid=Math.max(0.18,baseSize*(0.075+pressure*0.11)*(0.76+r()*0.44));
+      const rot=ang*180/Math.PI+jitter(r,7.5), rad=rot*Math.PI/180;
+      const graphiteOpacity=Math.min(0.34,opacityBase*(0.42+pressure*0.40));
+      const x1=cx-Math.cos(rad)*len/2, y1=cy-Math.sin(rad)*len/2;
+      const x2=cx+Math.cos(rad)*len/2, y2=cy+Math.sin(rad)*len/2;
+      arr.push(`<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${v.stroke}" stroke-width="${wid.toFixed(2)}" stroke-linecap="butt" stroke-opacity="${graphiteOpacity.toFixed(3)}"/>`);
+      if(r()<0.72){
+        const searchingLen=len*(0.42+r()*0.48), searchingOffset=jitter(r,baseSize*(0.16+pressure*0.22));
+        const sx=cx+s.nx*searchingOffset, sy=cy+s.ny*searchingOffset;
+        arr.push(`<line x1="${(sx-Math.cos(rad)*searchingLen/2).toFixed(2)}" y1="${(sy-Math.sin(rad)*searchingLen/2).toFixed(2)}" x2="${(sx+Math.cos(rad)*searchingLen/2).toFixed(2)}" y2="${(sy+Math.sin(rad)*searchingLen/2).toFixed(2)}" stroke="${v.stroke}" stroke-width="${Math.max(0.14,wid*(0.46+r()*0.34)).toFixed(2)}" stroke-linecap="butt" stroke-opacity="${(graphiteOpacity*(0.38+pressure*0.28)).toFixed(3)}"/>`);
+      }
+      if(r()<0.30+pressure*0.16){
+        const hatchAng=rad+(r()>0.5?Math.PI/3:-Math.PI/3), hatchLen=baseSize*(0.58+r()*1.25), hx=cx+s.nx*jitter(r,baseSize*0.55), hy=cy+s.ny*jitter(r,baseSize*0.55);
+        arr.push(`<line x1="${(hx-Math.cos(hatchAng)*hatchLen/2).toFixed(2)}" y1="${(hy-Math.sin(hatchAng)*hatchLen/2).toFixed(2)}" x2="${(hx+Math.cos(hatchAng)*hatchLen/2).toFixed(2)}" y2="${(hy+Math.sin(hatchAng)*hatchLen/2).toFixed(2)}" stroke="${v.stroke}" stroke-width="${Math.max(0.16,wid*(0.34+r()*0.28)).toFixed(2)}" stroke-linecap="butt" stroke-opacity="${(graphiteOpacity*(0.26+pressure*0.25)).toFixed(3)}"/>`);
+      }
     }else if(material==='charcoal'){
       // 목탄은 매끈한 점무늬가 아니라, 압력에 따라 폭과 농도가 달라지는
       // 짧은 겹침 자국과 마른 섬유 가장자리로 표현합니다.
@@ -667,12 +680,12 @@ function textureMarks(samples, v){
       const len=baseSize*(1.60+r()*1.95)*(0.92+pressure*0.16);
       const wid=Math.max(0.90,baseSize*(0.72+pressure*0.72))*(0.82+r()*0.30);
       const rot=ang*180/Math.PI+jitter(r,1.8);
-      const ink=0.62+pressure*0.62;
-      arr.push(`<rect x="${(-len/2).toFixed(2)}" y="${(-wid/2).toFixed(2)}" width="${len.toFixed(2)}" height="${wid.toFixed(2)}" transform="translate(${cx.toFixed(2)} ${cy.toFixed(2)}) rotate(${rot.toFixed(2)})" fill="${v.stroke}" fill-opacity="${(opacityBase*ink).toFixed(3)}"/>`);
+      const markerPassOpacity=Math.min(0.38,opacityBase*(0.34+pressure*0.20)*(0.72+r()*0.34));
+      arr.push(`<rect x="${(-len/2).toFixed(2)}" y="${(-wid/2).toFixed(2)}" width="${len.toFixed(2)}" height="${wid.toFixed(2)}" transform="translate(${cx.toFixed(2)} ${cy.toFixed(2)}) rotate(${rot.toFixed(2)})" fill="${v.stroke}" fill-opacity="${markerPassOpacity.toFixed(3)}"/>`);
       if(r()<0.52){
         const edgeLen=len*(0.62+r()*0.32), edgeWid=Math.max(0.45,wid*(0.18+r()*0.22));
         const edgeX=cx+s.dx*jitter(r,baseSize*0.42), edgeY=cy+s.dy*jitter(r,baseSize*0.42);
-        arr.push(`<rect x="${(-edgeLen/2).toFixed(2)}" y="${(-edgeWid/2).toFixed(2)}" width="${edgeLen.toFixed(2)}" height="${edgeWid.toFixed(2)}" transform="translate(${edgeX.toFixed(2)} ${edgeY.toFixed(2)}) rotate(${(rot+jitter(r,1.2)).toFixed(2)})" fill="${v.stroke}" fill-opacity="${(opacityBase*(0.24+pressure*0.40)).toFixed(3)}"/>`);
+        arr.push(`<rect x="${(-edgeLen/2).toFixed(2)}" y="${(-edgeWid/2).toFixed(2)}" width="${edgeLen.toFixed(2)}" height="${edgeWid.toFixed(2)}" transform="translate(${edgeX.toFixed(2)} ${edgeY.toFixed(2)}) rotate(${(rot+jitter(r,1.2)).toFixed(2)})" fill="${v.stroke}" fill-opacity="${Math.min(0.28,markerPassOpacity*(0.52+pressure*0.24)).toFixed(3)}"/>`);
       }
     }else{
       const side=r()>0.5?1:-1,away=baseSize*(0.08+r()*0.72),cx=s.x+s.nx*away*side+jitter(r,0.45),cy=s.y+s.ny*away*side+jitter(r,0.45),len=baseSize*(0.50+r()*1.15),wid=Math.max(0.24,baseSize*(0.10+r()*0.28)),x1=cx-Math.cos(ang)*len*0.5,y1=cy-Math.sin(ang)*len*0.5,x2=cx+Math.cos(ang)*len*0.5,y2=cy+Math.sin(ang)*len*0.5;
@@ -707,7 +720,7 @@ function values(){
     wob:+$('wobble').value, dynamic:+$('dynamic').value, microFreq:+$('microFreq').value, texture:+$('texture').value, grain:+$('grain').value,
     pressure:+$('pressure').value, density:+$('density').value, seed:+$('seed').value||1,
     r:[+$('rtl').value,+$('rtr').value,+$('rbr').value,+$('rbl').value],
-    tp:+$('tailPos').value, tw:+$('tailWidth').value, th:+$('tailHeight').value, lean:+$('tailLean').value, thoughtSize:+$('thoughtSize').value, thoughtStroke:+$('thoughtStroke').value, thoughtFill:$('thoughtFillColor').value, thoughtFillOpacity:+$('thoughtFillOpacity').value/100, thoughtSpacing:+$('thoughtSpacing').value, thoughtBodyGap:+$('thoughtBodyGap').value, thoughtAngle:+$('thoughtAngle').value
+    tp:+$('tailPos').value, tw:+$('tailWidth').value, th:+$('tailHeight').value, lean:+$('tailLean').value, tipRadius:+$('tailTipRadius').value, thoughtSize:+$('thoughtSize').value, thoughtStroke:+$('thoughtStroke').value, thoughtFill:$('thoughtFillColor').value, thoughtFillOpacity:+$('thoughtFillOpacity').value/100, thoughtSpacing:+$('thoughtSpacing').value, thoughtBodyGap:+$('thoughtBodyGap').value, thoughtAngle:+$('thoughtAngle').value
   };
 }
 
@@ -717,7 +730,7 @@ function render(){
   let base=[], circles=[], closed=true;
 
   if(shape === 'bubble'){
-    const data = bubbleOutlinePts(x,y,v.w,v.h,v.r,v.tp,v.tw,v.th,v.lean,tailType);
+    const data = bubbleOutlinePts(x,y,v.w,v.h,v.r,v.tp,v.tw,v.th,v.lean,v.tipRadius,tailType);
     base = data.outline;
     if(tailType === 'thought'){
       circles = thoughtTailCircles(data.meta, v);
@@ -725,7 +738,7 @@ function render(){
   } else if(shape === 'rect'){
     base = roundedRectPts(x,y,v.w,v.h,v.r);
   } else if(shape === 'ellipse'){
-    const data = ellipseBalloonPts(cx,cy,v.w/2,v.h/2,v.tp,v.tw,v.th,v.lean,tailType);
+    const data = ellipseBalloonPts(cx,cy,v.w/2,v.h/2,v.tp,v.tw,v.th,v.lean,v.tipRadius,tailType);
     base = data.outline;
     if(tailType === 'thought'){
       circles = thoughtTailCircles(data.meta, v);
@@ -747,20 +760,36 @@ function render(){
   const d3 = pathFromPoints(pass3Pts, closed);
 
   const cfg = materialCfg();
-  const sampleTarget=Math.max(80,Math.floor(base.length*(2.4+(v.texture/100)*3.2+(v.density/100)*2.6)));
+  const sampleTarget=Math.min(2600,Math.max(80,Math.floor(base.length*(2.4+(v.texture/100)*3.2+(v.density/100)*2.6))));
   const samples=sampleAlong(mainPts,sampleTarget);
   const marks = textureMarks(samples, v);
 
   const parts = [];
   const strokeCap=material==='marker' ? 'square' : 'round';
+  const markerMode=material==='marker';
+  const densityOpacity=Math.min(1,Math.max(0.2,v.density/100));
   const mainPressureWidth=1+p*0.72;
   const pressureWidth=material==='marker' ? (0.62+p*0.78) : (0.54+p*0.80);
   const pressureThinWidth=0.36+p*0.40;
   const pressureMainOpacity=0.86+p*0.14;
   const pressureAuxOpacity=0.45+p*0.85;
-  parts.push(`<path d="${dMain}" fill="${closed ? v.fill : 'none'}" fill-opacity="${closed ? v.fo : 0}" stroke="${v.stroke}" stroke-width="${(v.sw*mainPressureWidth).toFixed(2)}" stroke-linecap="${strokeCap}" stroke-linejoin="round" stroke-opacity="${(v.so * (v.density/100)*pressureMainOpacity).toFixed(3)}"/>`);
-  parts.push(`<path d="${d2}" fill="none" stroke="${v.stroke}" stroke-width="${(v.sw * pressureWidth).toFixed(2)}" stroke-linecap="${strokeCap}" stroke-linejoin="round" stroke-opacity="${(v.so*cfg.over2*(v.density/100)*pressureAuxOpacity).toFixed(3)}"/>`);
-  parts.push(`<path d="${d3}" fill="none" stroke="${v.stroke}" stroke-width="${Math.max(0.6, v.sw * pressureThinWidth).toFixed(2)}" stroke-linecap="${strokeCap}" stroke-linejoin="round" stroke-opacity="${(v.so*cfg.over3*(v.density/100)*(0.35+p*0.75)).toFixed(3)}"/>`);
+  if(markerMode){
+    // 마커는 가는 본선을 안쪽에 남기지 않고, 반투명한 사각 닙 한 겹으로 덮어 표현합니다.
+    const markerWidth=v.sw*(1.38+p*0.88);
+    const markerOpacity=v.so*(0.36+p*0.22);
+    parts.push(`<path d="${dMain}" fill="${closed ? v.fill : 'none'}" fill-opacity="${closed ? v.fo : 0}" stroke="${v.stroke}" stroke-width="${markerWidth.toFixed(2)}" stroke-linecap="square" stroke-linejoin="miter" stroke-opacity="${markerOpacity.toFixed(3)}"/>`);
+  }else if(material==='pencil'){
+    // 연필 외곽선도 여러 번의 얇은 흑연 선으로 남겨서 두꺼운 값에서도 검은 띠가 되지 않게 합니다.
+    const graphitePressure=0.34+p*0.42;
+    const graphiteOpacity=v.so*(0.26+p*0.28);
+    parts.push(`<path d="${dMain}" fill="${closed ? v.fill : 'none'}" fill-opacity="${closed ? v.fo : 0}" stroke="${v.stroke}" stroke-width="${(v.sw*graphitePressure).toFixed(2)}" stroke-linecap="butt" stroke-linejoin="round" stroke-opacity="${graphiteOpacity.toFixed(3)}"/>`);
+    parts.push(`<path d="${d2}" fill="none" stroke="${v.stroke}" stroke-width="${(v.sw*(0.24+p*0.30)).toFixed(2)}" stroke-linecap="butt" stroke-linejoin="round" stroke-opacity="${(v.so*(0.13+p*0.20)).toFixed(3)}"/>`);
+    parts.push(`<path d="${d3}" fill="none" stroke="${v.stroke}" stroke-width="${(v.sw*(0.16+p*0.22)).toFixed(2)}" stroke-linecap="butt" stroke-linejoin="round" stroke-opacity="${(v.so*(0.10+p*0.16)).toFixed(3)}"/>`);
+  }else{
+    parts.push(`<path d="${dMain}" fill="${closed ? v.fill : 'none'}" fill-opacity="${closed ? v.fo : 0}" stroke="${v.stroke}" stroke-width="${(v.sw*mainPressureWidth).toFixed(2)}" stroke-linecap="${strokeCap}" stroke-linejoin="round" stroke-opacity="${(v.so*densityOpacity*pressureMainOpacity).toFixed(3)}"/>`);
+    parts.push(`<path d="${d2}" fill="none" stroke="${v.stroke}" stroke-width="${(v.sw * pressureWidth).toFixed(2)}" stroke-linecap="${strokeCap}" stroke-linejoin="round" stroke-opacity="${(v.so*cfg.over2*densityOpacity*pressureAuxOpacity).toFixed(3)}"/>`);
+    parts.push(`<path d="${d3}" fill="none" stroke="${v.stroke}" stroke-width="${Math.max(0.6, v.sw * pressureThinWidth).toFixed(2)}" stroke-linecap="${strokeCap}" stroke-linejoin="round" stroke-opacity="${(v.so*cfg.over3*densityOpacity*(0.35+p*0.75)).toFixed(3)}"/>`);
+  }
   parts.push(marks);
   parts.push(circleMarkup(circles, v));
 
@@ -777,7 +806,7 @@ $('saveSvg').addEventListener('click', ()=>{
   const blob = new Blob([svgText()], {type:'image/svg+xml'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'malpoongsun-factory-v1.9.svg';
+  a.download = 'malpoongsun-factory-v2.1.svg';
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
   $('status').textContent = 'SVG 저장 완료 — Figma에 드래그하면 벡터로 사용할 수 있습니다.';
@@ -797,7 +826,7 @@ $('savePng').addEventListener('click', ()=>{
     c.toBlob(png=>{
       const a = document.createElement('a');
       a.href = URL.createObjectURL(png);
-      a.download = 'malpoongsun-factory-v1.9.png';
+      a.download = 'malpoongsun-factory-v2.1.png';
       a.click();
       setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
       $('status').textContent = 'PNG 저장 완료';
@@ -807,6 +836,7 @@ $('savePng').addEventListener('click', ()=>{
 });
 
 document.querySelectorAll('.thought-only').forEach(el => el.style.display = tailType==='thought' ? 'block' : 'none');
+document.querySelectorAll('.point-only').forEach(el => el.style.display = tailType==='point' ? 'block' : 'none');
 $('bubbleSection').style.display = (shape==='bubble' || shape==='ellipse') ? 'block' : 'none';
 render();
 })();
