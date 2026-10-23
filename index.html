@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>malpoongsun factory v2.9 · 말풍선 제조기</title>
+<title>malpoongsun factory v2.10 · 말풍선 제조기</title>
 <style>
 :root{
   --bg:#f3f3f5; --panel:#fff; --border:#d9d9de; --text:#111; --muted:#686870;
@@ -16,16 +16,16 @@ button,input,select{font:inherit}
 .header h1{font-size:20px;margin:0}
 .header p{margin:3px 0 0;color:var(--muted);font-size:12px}
 .badge{font-size:11px;border:1px solid var(--border);border-radius:999px;padding:4px 8px;background:#fff;color:var(--muted)}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:16px;align-items:start}
-.preview-col{position:sticky;top:12px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:16px;align-items:start;overflow:visible}
+.preview-col{position:sticky;top:12px;align-self:start;min-width:0;height:calc(100vh - 24px);max-height:calc(100vh - 24px);overflow:visible}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:16px}
-.preview-card{padding:14px}
+.preview-card{padding:14px;height:100%;display:flex;flex-direction:column;min-height:0}
 .toolbar{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .toolbar-group{display:flex;gap:8px;flex-wrap:wrap}
 .btn{border:1px solid var(--border);background:#fff;border-radius:10px;min-height:40px;padding:8px 12px;cursor:pointer}
 .btn.active,.btn.primary{background:#111;color:#fff;border-color:#111}
-.canvas-wrap{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;min-height:560px;display:flex;align-items:center;justify-content:center}
-#preview{display:block;width:100%;height:auto}
+.canvas-wrap{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;min-height:0;flex:1;display:flex;align-items:center;justify-content:center}
+#preview{display:block;width:100%;height:100%;max-height:100%;object-fit:contain}
 .status{font-size:12px;color:var(--muted);margin-top:8px;min-height:18px}
 .controls{padding:14px}
 .section{border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:14px}
@@ -46,8 +46,10 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
 .small{font-size:11px}
 @media (max-width: 980px){
   .layout{grid-template-columns:1fr}
-  .preview-col{position:static}
+  .preview-col{position:static;height:auto;max-height:none}
+  .preview-card{height:auto;display:block}
   .canvas-wrap{min-height:380px}
+  #preview{height:auto;max-height:none}
 }
 </style>
 </head>
@@ -56,9 +58,9 @@ input[type=color]{width:100%;height:38px;padding:2px;border:1px solid var(--bord
   <div class="header">
     <div>
       <h1>말풍선 FACTORY</h1>
-      <p>말풍선 제조기 · v2.9 — 날짜·번호 기반 파일명</p>
+      <p>말풍선 제조기 · v2.10 — 미리보기 상단 고정 개선</p>
     </div>
-    <span class="badge">local v2.9</span>
+    <span class="badge">local v2.10</span>
   </div>
 
   <div class="layout">
