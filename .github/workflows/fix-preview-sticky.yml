@@ -1,0 +1,61 @@
+name: Fix preview sticky layout
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-preview-sticky.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-sticky:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch sticky preview
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+
+          replacements = {
+              '.layout{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:16px;align-items:start}': '.layout{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:16px;align-items:start;overflow:visible}',
+              '.preview-col{position:sticky;top:12px}': '.preview-col{position:sticky;top:12px;align-self:start;min-width:0;height:calc(100vh - 24px);max-height:calc(100vh - 24px);overflow:visible}',
+              '.preview-card{padding:14px}': '.preview-card{padding:14px;height:100%;display:flex;flex-direction:column;min-height:0}',
+              '.canvas-wrap{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;min-height:560px;display:flex;align-items:center;justify-content:center}': '.canvas-wrap{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;min-height:0;flex:1;display:flex;align-items:center;justify-content:center}',
+              '#preview{display:block;width:100%;height:auto}': '#preview{display:block;width:100%;height:100%;max-height:100%;object-fit:contain}',
+              '  .preview-col{position:static}\n  .canvas-wrap{min-height:380px}': '  .preview-col{position:static;height:auto;max-height:none}\n  .preview-card{height:auto;display:block}\n  .canvas-wrap{min-height:380px}\n  #preview{height:auto;max-height:none}',
+              '<title>malpoongsun factory v2.9 · 말풍선 제조기</title>': '<title>malpoongsun factory v2.10 · 말풍선 제조기</title>',
+              '<p>말풍선 제조기 · v2.9 — 날짜·번호 기반 파일명</p>': '<p>말풍선 제조기 · v2.10 — 미리보기 상단 고정 개선</p>',
+              '<span class="badge">local v2.9</span>': '<span class="badge">local v2.10</span>',
+          }
+
+          missing = []
+          for old, new in replacements.items():
+              if old not in text:
+                  missing.append(old)
+              else:
+                  text = text.replace(old, new, 1)
+
+          if missing:
+              raise SystemExit('Expected source patterns not found: ' + repr(missing))
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit sticky preview fix
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No index.html changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "fix: keep preview visible while scrolling controls"
+          git push
